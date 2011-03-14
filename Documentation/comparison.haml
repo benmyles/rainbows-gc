@@ -1,0 +1,389 @@
+%h1 Rainbows! at a glance
+%p
+  Confused by all the options we give you?  So are we!  Here's some tables
+  to help keep your head straight.  Remember, engineering is all about
+  trade-offs.
+%h2 core features and compatibility
+%br
+%table.comp
+  %tr.comp_header
+    %th.mod module
+    %th.tee rack.input streaming
+    %th.r18 Ruby 1.8
+    %th.r19 Ruby 1.9
+    %th.rbx Rubinius
+    %th.slow slow clients
+  %tr.comp_base
+    %td.mod Unicorn/Base
+    %td.tee Yes
+    %td.r18 Yes
+    %td.r19 Yes
+    %td.rbx Yes
+    %td.slow No
+  %tr.comp_row
+    %td.mod Revactor
+    %td.tee Yes
+    %td.r18 No
+    %td.r19 Yes
+    %td.rbx No
+    %td.slow Yes
+  %tr.comp_row
+    %td.mod ThreadPool
+    %td.tee Yes
+    %td.r18 Yes
+    %td.r19 Yes
+    %td.rbx Yes
+    %td.slow OK
+  %tr.comp_row
+    %td.mod Coolio
+    %td.tee No
+    %td.r18 Yes
+    %td.r19 Yes
+    %td.rbx No
+    %td.slow Yes
+  %tr.comp_row
+    %td.mod ThreadSpawn
+    %td.tee Yes
+    %td.r18 Yes
+    %td.r19 Yes
+    %td.rbx Yes
+    %td.slow OK
+  %tr.comp_row
+    %td.mod EventMachine
+    %td.tee No
+    %td.r18 Yes
+    %td.r19 Yes
+    %td.rbx No
+    %td.slow Yes
+  %tr.comp_row
+    %td.mod CoolioThreadSpawn
+    %td.tee No
+    %td.r18 No
+    %td.r19 Yes
+    %td.rbx No
+    %td.slow Yes
+  %tr.comp_row
+    %td.mod FiberSpawn
+    %td.tee Yes
+    %td.r18 No
+    %td.r19 Yes
+    %td.rbx No
+    %td.slow Yes
+  %tr.comp_row
+    %td.mod FiberPool
+    %td.tee Yes
+    %td.r18 No
+    %td.r19 Yes
+    %td.rbx No
+    %td.slow Yes
+  %tr.comp_base
+    %td.mod ActorSpawn
+    %td.tee Yes
+    %td.r18 Not yet
+    %td.r19 No
+    %td.rbx Yes
+    %td.slow Yes
+  %tr.comp_base
+    %td.mod NeverBlock
+    %td.tee No
+    %td.r18 Yes
+    %td.r19 Yes
+    %td.rbx No
+    %td.slow Yes
+  %tr.comp_row
+    %td.mod CoolioThreadPool
+    %td.tee No
+    %td.r18 Yes
+    %td.r19 No
+    %td.rbx No
+    %td.slow Yes
+  %tr.comp_row
+    %td.mod CoolioFiberSpawn
+    %td.tee Yes
+    %td.r18 No
+    %td.r19 Yes
+    %td.rbx No
+    %td.slow Yes
+  %tr.comp_row
+    %td.mod WriterThreadPool
+    %td.tee Yes
+    %td.r18 Yes
+    %td.r19 Yes
+    %td.rbx Yes
+    %td.slow no
+  %tr.comp_row
+    %td.mod WriterThreadSpawn
+    %td.tee Yes
+    %td.r18 Yes
+    %td.r19 Yes
+    %td.rbx Yes
+    %td.slow no
+%ul
+  %li
+    Cool.io should also work with Rubinius (though we haven't had time to test).
+  %li
+    CoolioThread* and CoolioThread* requires Ruby 1.9 reasonable performance
+  %li
+    rack.input streaming is what makes
+    %a(href="http://upr.bogomips.org/") upload progress,
+    and BOSH possible
+  %li
+    rack.input streaming is NOT compatible with current versions of nginx
+    or any proxy that fully buffers request bodies before proxying.
+    Keep in mind request body buffering in nginx is a good thing in all
+    other cases where rack.input streaming is not needed.
+
+%h2 application requirements
+%br
+%table.comp
+  %tr.comp_header
+    %th.mod module
+    %th.slowio slow I/O (backend, not client)
+    %th.thr thread safety
+    %th.reent single thread reentrant
+  %tr.comp_base
+    %td.mod Unicorn/Base
+    %td.slowio avoid
+    %td.thr No
+    %td.reent No
+  %tr.comp_row
+    %td.mod Revactor
+    %td.slowio
+      %a(href="http://coolio.github.com/")Coolio,
+      %a(href="http://revactor.org/")Revactor,
+      %b
+        not
+      %a(href="Rainbows/Fiber/IO.html")Fiber::IO
+    %td.thr No
+    %td.reent Yes
+  %tr.comp_row
+    %td.mod ThreadPool
+    %td.slowio thread-safe Ruby
+    %td.thr Yes
+    %td.reent No
+  %tr.comp_row
+    %td.mod Coolio
+    %td.slowio
+      %a(href="http://coolio.github.com/") Coolio
+    %td.thr No
+    %td.reent No
+  %tr.comp_row
+    %td.mod ThreadSpawn
+    %td.slowio thread-safe Ruby
+    %td.thr Yes
+    %td.reent No
+  %tr.comp_row
+    %td.mod EventMachine
+    %td.slowio
+      %a(href="http://rubyeventmachine.com") EventMachine
+    %td.thr No
+    %td.reent No
+  %tr.comp_row
+    %td.mod CoolioThreadSpawn
+    %td.slowio
+      thread-safe Ruby,
+      %a(href="http://coolio.github.com/") Coolio
+    %td.thr Yes
+    %td.reent No
+  %tr.comp_row
+    %td.mod FiberSpawn
+    %td.slowio
+      %a(href="Rainbows/Fiber/IO.html") Rainbows::Fiber::IO
+    %td.thr No
+    %td.reent Yes
+  %tr.comp_row
+    %td.mod FiberPool
+    %td.slowio
+      %a(href="Rainbows/Fiber/IO.html") Rainbows::Fiber::IO
+    %td.thr No
+    %td.reent Yes
+  %tr.comp_base
+    %td.mod ActorSpawn
+    %td.slowio thread-safe Ruby
+    %td.thr Yes
+    %td.reent Yes
+  %tr.comp_base
+    %td.mod NeverBlock
+    %td.slowio
+      %a(href="http://www.espace.com.eg/neverblock") NeverBlock,
+      %a(href="http://rubyeventmachine.com") EventMachine
+    %td.thr No
+    %td.reent Yes
+  %tr.comp_row
+    %td.mod CoolioThreadPool
+    %td.slowio
+      thread-safe Ruby,
+      %a(href="http://coolio.github.com/") Coolio
+    %td.thr Yes
+    %td.reent No
+  %tr.comp_row
+    %td.mod CoolioFiberSpawn
+    %td.slowio
+      %a(href="Rainbows/Fiber/IO.html") Rainbows::Fiber::IO
+    %td.thr No
+    %td.reent Yes
+  %tr.comp_base
+    %td.mod WriterThreadPool
+    %td.slowio avoid
+    %td.thr Maybe
+    %td.reent Maybe
+  %tr.comp_base
+    %td.mod WriterThreadSpawn
+    %td.slowio avoid
+    %td.thr Maybe
+    %td.reent Maybe
+%ul
+  %li
+    Requirements for single thread reentrancy are loose in that there is
+    no risk of race conditions and potentially mutually exclusive to
+    thread-safety.  In the case where a Fiber yields while holding a
+    resource and another Fiber attempting to acquire it may raise
+    an error or worse, deadlock the entire process.
+  %li
+    Slow I/O means anything that can block/stall on sockets including
+    3rd-party APIs (OpenID providers included) or slow database queries.
+    Properly run Memcached (within the same LAN) is fast and not a blocker.
+    Slow I/O on POSIX filesystems only includes a few operations, namely
+    on UNIX domain sockets and named pipes.  Nearly all other operations
+    on POSIX filesystems can be considered "fast", or at least
+    uninterruptible.
+  %li
+    WriterThread{Pool,Spawn} will require thread safety if your response
+    body is dynamically generated during the body#each call.
+
+%h2 middlewares and frameworks
+%br
+
+%table.comp
+  %tr.comp_header
+    %th.mod model
+    %th.devfd
+      %a(href="Rainbows/DevFdResponse.html") DevFdResponse
+    %th.app_pool
+      %a(href="Rainbows/AppPool.html") AppPool
+    %th.lock
+      %a(href="http://rack.rubyforge.org/doc/Rack/Lock.html") Rack::Lock
+    %th.async async
+    %th.ws Web Sockets
+  %tr.comp_row
+    %td.mod Unicorn/Base
+    %td.devfd no-op
+    %td.app_pool no-op
+    %td.lock no-op
+    %td.async lots of RAM :P
+    %td.ws no
+  %tr.comp_row
+    %td.mod Revactor
+    %td.devfd no-op
+    %td.app_pool Yes
+    %td.lock No!
+    %td.async Revactor itself
+    %td.ws no
+  %tr.comp_row
+    %td.mod ThreadPool
+    %td.devfd Yes
+    %td.app_pool Yes
+    %td.lock Yes
+    %td.async standard Ruby
+    %td.ws no
+  %tr.comp_row
+    %td.mod Coolio
+    %td.devfd Yes
+    %td.app_pool no-op
+    %td.lock no-op
+    %td.async DevFdResponse
+    %td.ws no
+  %tr.comp_row
+    %td.mod ThreadSpawn
+    %td.devfd Yes
+    %td.app_pool Yes
+    %td.lock Yes
+    %td.async standard Ruby
+    %td.ws no
+  %tr.comp_row
+    %td.mod EventMachine
+    %td.devfd Yes
+    %td.app_pool no-op
+    %td.lock no-op
+    %td.async async_sinatra, Cramp, rack-fiber_pool
+    %td.ws no
+  %tr.comp_row
+    %td.mod CoolioThreadSpawn
+    %td.devfd Yes
+    %td.app_pool Yes
+    %td.lock Dumb
+    %td.async standard Ruby
+    %td.ws no
+  %tr.comp_row
+    %td.mod FiberSpawn
+    %td.devfd Yes
+    %td.app_pool Yes
+    %td.lock No!
+    %td.async Rainbows::Fiber::IO, Rainbows.sleep
+    %td.ws no
+  %tr.comp_row
+    %td.mod FiberPool
+    %td.devfd Yes
+    %td.app_pool Yes
+    %td.lock No!
+    %td.async Rainbows::Fiber::IO, Rainbows.sleep
+    %td.ws no
+  %tr.comp_row
+    %td.mod ActorSpawn
+    %td.devfd no-op
+    %td.app_pool Yes
+    %td.lock Yes
+    %td.async standard Ruby
+    %td.ws no
+  %tr.comp_row
+    %td.mod NeverBlock
+    %td.devfd Yes
+    %td.app_pool Yes*
+    %td.lock Yes*
+    %td.async NeverBlock, async_sinatra
+    %td.ws no
+  %tr.comp_row
+    %td.mod CoolioThreadPool
+    %td.devfd Yes
+    %td.app_pool Yes
+    %td.lock Dumb
+    %td.async Coolio, standard Ruby
+    %td.ws no
+  %tr.comp_row
+    %td.mod CoolioFiberSpawn
+    %td.devfd Yes
+    %td.app_pool Yes
+    %td.lock No!
+    %td.async Coolio, Rainbows::Fiber::IO, Rainbows.sleep
+  %tr.comp_row
+    %td.mod WriterThreadPool
+    %td.devfd Yes
+    %td.app_pool no-op
+    %td.lock no-op
+    %td.async Standard Ruby in response body only
+    %td.ws response body only
+  %tr.comp_row
+    %td.mod WriterThreadSpawn
+    %td.devfd Yes
+    %td.app_pool no-op
+    %td.lock no-op
+    %td.async Standard Ruby in response body only
+    %td.ws response body only
+%ul
+  %li
+    "No!" means it's fundamentally incompatible, use an
+    %a(href="Rainbows/AppPool.html") AppPool
+    %b :size
+    of one instead.
+  %li
+    NeverBlock also supports a :pool_size option which is one less
+    layer of complexity than using AppPool.
+  %li
+    NeverBlock can neuter the Mutex class so Rack::Lock effectively
+    becomes a no-op with:
+    %br
+    %code require "never_block/frameworks/rails"
+    (before Rails is loaded)
+  %li
+    Everything that's DevFdResponse-compatible can use it for passing
+    async responses through

@@ -1,0 +1,97 @@
+= \Rainbows! is like Unicorn, but Different...
+
+While \Rainbows! depends on Unicorn for its process/socket management,
+HTTP parser and configuration language; \Rainbows! is more ambitious.
+
+== Architectural Diagrams
+
+=== Unicorn uses a 1:1 mapping of processes to clients
+
+     unicorn master
+     \_ unicorn worker[0]
+     |  \_ client[0]
+     \_ unicorn worker[1]
+     |  \_ client[1]
+     \_ unicorn worker[2]
+     |  \_ client[2]
+     ...
+     \_ unicorn worker[M]
+        \_ client[M]
+
+=== \Rainbows! uses a M:N mapping of processes to clients
+
+    rainbows master
+     \_ rainbows worker[0]
+     |  \_ client[0,0]
+     |  \_ client[0,1]
+     |  \_ client[0,2]
+     |  ...
+     |  \_ client[0,N]
+     \_ rainbows worker[1]
+     |  \_ client[1,0]
+     |  \_ client[1,1]
+     |  \_ client[1,2]
+     |  \_ client[1,3]
+     |  ...
+     |  \_ client[1,N]
+     \_ rainbows worker[2]
+     |  \_ client[2,0]
+     |  \_ client[2,1]
+     |  \_ client[2,2]
+     |  ...
+     |  \_ client[2,N]
+     ...
+     \_ rainbows worker[M]
+        \_ client[M,0]
+        \_ client[M,1]
+        \_ client[M,2]
+        ...
+        \_ client[M,N]
+
+In both cases, workers share common listen sockets with the master and
+pull connections off the listen queue only if the worker has resources
+available.
+
+== Differences from Unicorn
+
+* log rotation is handled immediately in \Rainbows! whereas Unicorn has
+  the luxury of delaying it until the current request is finished
+  processing to prevent log entries for one request to be split across
+  files.
+
+* load balancing between workers is imperfect, certain worker processes
+  may be servicing more requests than others so it is important to not
+  set +worker_connections+ too high.  Unicorn worker processes can never
+  be servicing more than one request at once.
+
+* speculative, non-blocking accept() is not used, this is to help
+  load balance between multiple worker processes.
+
+* HTTP pipelining and keepalive may be used for GET and HEAD requests.
+
+* Less heavily-tested and inherently more complex.
+
+
+== Similarities with Unicorn
+
+While some similarities are obvious (we depend on and subclass off
+Unicorn code), some things are not:
+
+* Does not attempt to accept() connections when pre-configured limits
+  are hit (+worker_connections+).  This will first help balance load
+  to different worker processes, and if your listen() +:backlog+ is
+  overflowing: to other machines in your cluster.
+
+* Accepts the same {signals}[http://unicorn.bogomips.org/SIGNALS.html]
+  for process management, so you can share scripts to manage them (and
+  nginx, too).
+
+* supports per-process listeners, allowing an external load balancer
+  like haproxy or nginx to be used to balance between multiple
+  worker processes.
+
+* Exposes a streaming "rack.input" to the Rack application that reads
+  data off the socket as the application reads it (while retaining
+  rewindable semantics as required by Rack).  This allows Rack-compliant
+  apps/middleware to implement things such as real-time upload progress
+  monitoring.

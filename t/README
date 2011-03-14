@@ -1,0 +1,63 @@
+= \Rainbows! test suite - YES OUR TEST SUITE IS CONCURRENT!
+
+These are all integration tests that start the server on random, unused
+TCP ports or Unix domain sockets.  They're all designed to run
+concurrently with other tests to minimize test time, but tests may be
+run independently as well.
+
+We write our tests primarily in Bourne shell because that's what we're
+comfortable writing integration tests with.  This test suite is also
+easily portable to non-Ruby web servers.
+
+== Requirements
+
+* {Ruby 1.8 or 1.9}[http://www.ruby-lang.org/] (duh!)
+* {isolate ~> 2.1.0}[http://github.com/jbarnette/isolate] - for dependencies
+* {GNU make}[http://www.gnu.org/software/make/]
+* {socat}[http://www.dest-unreach.org/socat/]
+* {curl >= 7.18.0}[http://curl.haxx.se/]
+* standard UNIX shell utilities (Bourne sh, awk, sed, grep, ...)
+
+We do not use bashisms or any non-portable, non-POSIX constructs
+in our shell code.  We use the "pipefail" option if available and
+mainly test with {ksh}[http://kornshell.com/], but occasionally
+with {dash}[http://gondor.apana.org.au/~herbert/dash/] and
+{bash}[http://www.gnu.org/software/bash/], too.
+
+== Running Tests
+
+*BSD users: use "gmake" instead of "make"
+
+To run the entire test suite with 8 tests running at once:
+
+  make -j8
+
+To run one individual test for all concurrency models:
+
+  make t0000-simple-http.sh
+
+To run one individual test for one concurrency model:
+
+  make Revactor.t0000-simple-http.sh
+
+To run all tests for one concurrency model:
+
+  make EventMachine
+
+You may also increase verbosity by setting the "V" variable for
+GNU make.  To disable trapping of stdout/stderr:
+
+  make V=1
+
+To enable the "set -x" option in shell scripts to trace execution
+
+  make V=2
+
+== Performance
+
+Some of the tests are rather I/O intensive due to the rewindability
+requirement of "rack.input" in the Rack specification and the somewhat
+complicated (but awesome!) nature of the TeeInput class leading us to
+test it very heavily.  If you have lots of RAM and a large tmpfs
+partition, it is advisable to set your TMPDIR and also make the t/trash/
+directory a symlink to a directory inside in your TMPDIR.

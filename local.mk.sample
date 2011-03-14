@@ -1,0 +1,39 @@
+# this is the local.mk file used by Eric Wong on his dev boxes.
+# GNUmakefile will source local.mk in the top-level source tree
+# if it is present.
+#
+# This is depends on a bunch of GNU-isms from bash, sed, touch.
+
+DLEXT := so
+
+# if you have a decent amount of RAM, setting TMPDIR to be on tmpfs
+# can significantly improve performance because uploads take a lot
+# of disk I/O due to the rewindability requirement in Rack.
+# TMPDIR := /dev/shm
+# export TMPDIR
+
+# Avoid loading rubygems to speed up tests because gmake is
+# fork+exec heavy with Ruby.
+prefix = $(HOME)
+
+ifeq ($(r192),)
+  RUBY := $(prefix)/bin/ruby
+else
+  prefix := $(prefix)/ruby-1.9.2
+  export PATH := $(prefix)/bin:$(PATH)
+  RUBY := $(prefix)/bin/ruby --disable-gems
+endif
+
+# pipefail is THE reason to use bash (v3+) or never revisions of ksh93
+# SHELL := /bin/bash -e -o pipefail
+SHELL := /bin/ksh93 -e -o pipefail
+
+# trace execution of tests
+# TRACER = strace -f -o $(t_pfx).strace -s 100000
+# TRACER = /usr/bin/time -v -o $(t_pfx).time
+
+full-test: test-18 test-192
+test-18:
+	$(MAKE) test 2>&1 | sed -e 's!^!1.8 !'
+test-192:
+	$(MAKE) test r192=T 2>&1 | sed -e 's!^!1.9.2 !'

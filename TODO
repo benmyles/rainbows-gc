@@ -1,0 +1,37 @@
+= TODO items for Rainbows!
+
+We're lazy and pick the easy items to do first, then the ones people
+care about.
+
+* documentation improvements
+
+* Split out NeverBlock into NeverBlockEventMachine and NeverBlockReactor
+  NeverBlock will default to one of them (depending on NB upstream).
+
+* allow _OPTIONAL_ splice(2) with DevFdResponse under Linux
+  (splice is very broken under some older kernels)
+
+* use IO#trysendfile for EventMachine/NeverBlock
+
+* Open file cache Rack app/middleware (idea from nginx), since sendfile
+  (and IO.copy_stream) allows pread(2)-style offsets
+
+* Improve test suite coverage.  We won't waste cycles with puny
+  unit tests, only integration tests that exercise externally
+  visible parts.
+
+* EventMachine+Fibers+streaming input
+  (those who do not require streaming input can use
+  {rack-fiber_pool}[http://github.com/mperham/rack-fiber_pool])
+
+* CoolioFiberPool
+
+* ThreadPoolRevFiber{Spawn,Pool}: just because
+
+* Coolio + callcc - current Coolio model with callcc (should work with MBARI)
+
+* Omnibus - haven't looked into it, probably like Revactor with 1.8?
+
+* Packet - pure Ruby, EventMachine-like library
+
+* test and improve performance (throughput/latency/memory usage)

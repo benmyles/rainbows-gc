@@ -1,0 +1,8 @@
+---
+cgit_url: http://bogomips.org/rainbows.git
+git_url: git://bogomips.org/rainbows.git
+rdoc_url: http://rainbows.rubyforge.org/
+changelog_start: v0.97.0
+merge_html:
+  rainbows_1: Documentation/rainbows.1.html
+  Summary: Documentation/comparison.html

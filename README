@@ -1,0 +1,178 @@
+= Rainbows! - Unicorn for sleepy apps and slow clients
+
+\Rainbows! is an HTTP server for sleepy Rack applications.  It is based on
+Unicorn, but designed to handle applications that expect long
+request/response times and/or slow clients.
+
+For Rack applications not heavily bound by slow external network
+dependencies, consider Unicorn instead as it simpler and easier to
+debug.
+
+If you're on a small system, or write extremely tight and reliable code
+and don't want multiple worker processes, check out
+{Zbatery}[http://zbatery.bogomip.org/], too. Zbatery can use all the
+crazy network concurrency options of \Rainbows! in a single worker
+process.
+
+== \Rainbows! is about Diversity
+
+We aim to support as many concurrency models as we can because they all
+suck; differently.
+
+For network concurrency, models we currently support are:
+
+* {Coolio}[link:Rainbows/Coolio.html]
+* {EventMachine}[link:Rainbows/EventMachine.html]
+* {FiberSpawn}[link:Rainbows/FiberSpawn.html]
+* {FiberPool}[link:Rainbows/FiberPool.html]
+* {NeverBlock}[link:Rainbows/NeverBlock.html]
+* {Revactor}[link:Rainbows/Revactor.html]
+* {ThreadPool}[link:Rainbows/ThreadPool.html]
+* {ThreadSpawn}[link:Rainbows/ThreadSpawn.html]
+* {WriterThreadPool}[link:Rainbows/WriterThreadPool.html]
+* {WriterThreadSpawn}[link:Rainbows/WriterThreadSpawn.html]
+* {CoolioFiberSpawn}[link:Rainbows/CoolioFiberSpawn.html]
+* {CoolioThreadPool}[link:Rainbows/CoolioThreadPool.html]
+* {CoolioThreadSpawn}[link:Rainbows/CoolioThreadSpawn.html]
+
+We have {many more on the way}[link:TODO.html] for handling network
+concurrency.  Additionally, we also use multiple processes (managed by
+Unicorn) for robustness and CPU/memory/disk concurrency.
+
+We also provide Rainbows::AppPool Rack middleware for some network
+concurrency models for limiting application concurrency independently of
+network concurrency.
+
+== Features
+
+* Designed for {Rack}[http://rack.rubyforge.org/], the standard for
+  modern Ruby HTTP applications.
+
+* Built on {Unicorn}[http://unicorn.bogomips.org/], inheriting its
+  process/socket management features such as transparent upgrades and
+  Ruby configuration DSL.
+
+* As with Unicorn, it is able to stream large request bodies off the
+  socket to the application while the client is still uploading.  Since
+  \Rainbows! can handle slow clients, this feature is more useful than
+  it is with Unicorn.
+
+* Combines heavyweight concurrency (worker processes) with lightweight
+  concurrency (Events/Fibers/Actors/Threads), allowing CPU/memory/disk to
+  be scaled independently of client connections.  More concurrency models
+  (listed in the TODO) will be supported as we find time for them.
+
+* We give you {lots of options}[link:Summary.html] with more
+  {on the way}[link:TODO.html].
+
+== Applications
+
+\Rainbows! is mainly designed for the odd things Unicorn sucks at:
+
+* 3rd-party APIs (to services outside your control/LAN)
+* OpenID consumers (to providers outside your control/LAN)
+* Reverse proxy implementations with editing/censoring
+  (to upstreams outside your control/LAN)
+* Comet
+* BOSH (with slow clients)
+* HTTP server push
+* Long polling
+* Reverse AJAX
+* real-time upload processing (via {upr}[http://upr.bogomips.org/])
+
+\Rainbows! can also be used to service slow clients directly even with
+fast applications.
+
+== License
+
+\Rainbows! is copyright 2009,2010 by all contributors (see logs in git).
+It is based on Mongrel 1.1.5 and Unicorn and carries the same license.
+
+Mongrel is copyright 2007 Zed A. Shaw and contributors. It is licensed
+under the Ruby (1.8) license and the GPL2. See the included LICENSE file for
+details.
+
+\Rainbows! is 100% Free Software.
+
+== Install
+
+You may download the tarball from the \Rainbows! project page on Rubyforge
+and run setup.rb after unpacking it:
+
+http://rubyforge.org/frs/?group_id=8977
+
+You may also install it via RubyGems on RubyGems.org:
+
+  gem install rainbows
+
+== Usage
+
+=== for Rack applications
+
+In APP_ROOT (where config.ru is located), run:
+
+  rainbows
+
+\Rainbows! will bind to all interfaces on TCP port 8080 by default.
+
+=== Configuration File(s)
+
+\Rainbows! will look for the config.ru file used by rackup in APP_ROOT.
+
+For deployments, it can use a config file for Unicorn and
+\Rainbows!-specific options specified by the +--config-file/-c+
+command-line switch.  \Rainbows! accepts all options found in
+{Unicorn::Configurator}[http://unicorn.bogomips.org/Unicorn/Configurator.html]
+as well as the "\Rainbows!" block, so you can have the following in your
+config file:
+
+    worker_processes 4 # assuming four CPU cores
+    Rainbows! do
+      use :FiberSpawn
+      worker_connections 100
+    end
+
+See the {Rainbows! configuration}[link:Rainbows/Configurator.html]
+{documentation}[link:Rainbows/Configurator.html]
+for more details.
+
+== Development
+
+You can get the latest source via git from the following locations
+(these versions may not be stable):
+
+  git://bogomips.org/rainbows.git
+  git://repo.or.cz/rainbows.git (mirror)
+
+You may browse the code from the web and download the latest snapshot
+tarballs here:
+
+* http://bogomips.org/rainbows.git (cgit)
+* http://repo.or.cz/w/rainbows.git (gitweb)
+
+Inline patches (from "git format-patch") to the mailing list are
+preferred because they allow code review and comments in the reply to
+the patch.
+
+We will adhere to mostly the same conventions for patch submissions as
+git itself.  See the Documentation/SubmittingPatches document
+distributed with git on on patch submission guidelines to follow.  Just
+don't email the git mailing list or maintainer with \Rainbows! patches.
+
+== Disclaimer
+
+There is NO WARRANTY whatsoever if anything goes wrong, but let us know
+and we'll try our best to fix it.
+
+== Contact
+
+All feedback (bug reports, user/development discussion, patches, pull
+requests) go to the mailing list/newsgroup.  Patches must be sent inline
+(git format-patch -M + git send-email).  No subscription is necessary
+to post on the mailing list.  No top posting.  Address replies +To:+
+the mailing list.
+
+* email: mailto:rainbows-talk@rubyforge.org
+* nntp: nntp://news.gmane.org/gmane.comp.lang.ruby.rainbows.general
+* subscribe: http://rubyforge.org/mailman/listinfo/rainbows-talk
+* archives: http://rubyforge.org/pipermail/rainbows-talk

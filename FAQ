@@ -1,0 +1,106 @@
+= Frequently Asked Questions about \Rainbows!
+
+=== Why is \Rainbows! a separate project from Unicorn?
+
+\Rainbows! is for the odd, corner-case requests that Unicorn is poorly
+suited for.  More scalable concurrency models introduce additional
+complexity that Unicorn users and developers are uncomfortable with for
+the common cases.
+
+
+=== What complexity?  Threads/events/actors are easy to work with!
+
+Good for you.  Some of us depend on libraries incompatible with those
+models, or are just too lazy to deal with them for the majority of
+requests we service.
+
+
+=== Isn't "rainbows" a branch of Unicorn?
+
+That functionality is now in the Revactor model of \Rainbows!
+
+
+=== What happened to the "gossamer" branch of Unicorn?
+
+It became the ThreadPool model of \Rainbows!
+
+
+=== Which concurrency model should I use?
+
+It depends on your application, libraries, Ruby stack and use cases.
+That's why we support as many concurrency model as we can.  Each model
+has their own strengths and weaknesses in terms of maturity,
+ease-of-debugging, compatibility, performance, and memory usage.
+
+
+=== Should I put \Rainbows! behind nginx to serve slow clients?
+
+It is optional.  You can still use nginx to route certain requests to
+Unicorn and others to \Rainbows!  nginx will always outperform
+\Rainbows! in both pure reverse proxy applications and for serving
+static files,  but \Rainbows! is for hosting applications that are more
+easily-implemented in Ruby than C.
+
+
+=== Should I use \Rainbows! to serve static files?
+
+It depends on the size and amount of static files you're serving.  If
+you're serving a lot of static files (especially large ones), then by
+all means use nginx.  If not, then \Rainbows! is likely a "good enough"
+solution even if nginx will always outperform it in raw throughput.
+
+
+=== How do I support SSL?
+
+If you need streaming "rack.input" to do on-the-fly upload processing
+within your Rack application, then using an SSL proxy such as
+{Pound}[http://www.apsis.ch/pound/] or {Stunnel}[http://stunnel.org/] is
+required.  Pound has built-in X-Forwarded-For support while Stunnel
+requires a extra {patch}[http://haproxy.1wt.eu/download/patches/].
+
+If you don't need streaming "rack.input", then nginx is a great HTTPS
+reverse proxy.
+
+Refer to the {Unicorn FAQ}[http://unicorn.bogomips.org/FAQ.html] on how
+to ensure redirects go to "https://" URLs.
+
+
+=== Is there a "rainbows_rails" command like there is "unicorn_rails"?
+
+No.
+
+"unicorn_rails" was written primarily to support older versions of
+Rails.  Since \Rainbows! is designed for newer applications based on
+Rack, it can just use a "config.ru" file like other Rack frameworks and
+applications.
+
+For Rails 3.x, you should already have a config.ru file and
+"rainbows(1)" will work out-of-the-box like "rackup(1)".  Rails 3
+will support RACK_ENV as set by "rainbows(1)", so you won't need
+to set RAILS_ENV.
+
+For Rails 2.3.x, the following config.ru will work for you:
+
+  ENV["RAILS_ENV"] ||= ENV["RACK_ENV"]
+  require "#{::File.expand_path('config/environment')}"
+  use Rails::Rack::Static
+  run ActionController::Dispatcher.new
+
+For older versions of Rails, the following config.ru will work:
+
+  ENV["RAILS_ENV"] ||= ENV["RACK_ENV"]
+  require "#{::File.expand_path('config/boot')}"
+  require "#{::File.expand_path('config/environment')}"
+  require 'unicorn/app/old_rails'
+  require 'unicorn/app/old_rails/static' # not needed with Unicorn 0.95+
+  use Unicorn::App::OldRails::Static
+  run Unicorn::App::OldRails.new
+
+One thing to watch out for is that RAILS_ENV will not be set in the
+environment for you, thus we set it to match RACK_ENV.
+
+=== I'm using threads and Rails is misbehaving!
+
+If you use any of the threaded concurrency models, you will need to use
+{config.threadsafe!}[http://m.onkey.org/thread-safety-for-your-rails]
+in your config/environments/$RAILS_ENV.rb
